@@ -4,7 +4,7 @@ This is a pretty straight forward replacement for the AutoExecConfig include tha
 
 ## Requirements
 
-The compiler must be able to support enum structs which means a sourcemod 1.10 or above compiler.
+Compiler from sourcemod build 6449 or greater.
 
 ## What's It Do
 
