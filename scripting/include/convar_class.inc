@@ -297,6 +297,14 @@ methodmap Convar < ConVar
 		return true;
 	}
 
+	public static void AutoExecConfig(const char[] fileName = "", const char[] folder = "sourcemod", const bool clearWhenDone = true)
+	{
+		if(Convar.CreateConfig(fileName, folder, clearWhenDone))
+		{
+			AutoExecConfig(false, fileName, folder);
+		}
+	}
+
 	public void Close()
 	{
 		delete _ConvarList;
