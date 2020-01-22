@@ -32,7 +32,6 @@ enum struct convar_t
 	}
 }
 
-
 methodmap Convar < ConVar
 {
 	public Convar(const char[] name, const char[] defaultValue, const char[] description = "",
@@ -49,7 +48,8 @@ methodmap Convar < ConVar
 		savedValue.cvar = cvar;
 		strcopy(savedValue.description, 512, description);
 		strcopy(savedValue.defValue, 64, defaultValue);
-
+		
+		// Can't set default values :T
 		savedValue.SetMin(hasMin, min);
 		savedValue.SetMax(hasMax, max);
 
@@ -83,10 +83,14 @@ methodmap Convar < ConVar
 		char local[PLATFORM_MAX_PATH];
 		if(fileName[0] == 0)
 		{
-			char pluginName[64];
-			GetPluginFilename(GetMyHandle(), pluginName, 64);
-			ReplaceString(pluginName, 64, ".smx", "");
-			FormatEx(local, PLATFORM_MAX_PATH, "cfg/%s/plugin.%s.cfg", folder, pluginName);
+			char pluginName[PLATFORM_MAX_PATH];
+			GetPluginFilename(GetMyHandle(), pluginName, PLATFORM_MAX_PATH);
+
+			ReplaceString(pluginName, PLATFORM_MAX_PATH, ".smx", "");
+
+			int start = FindCharInString(pluginName, '/', true);
+
+			FormatEx(local, PLATFORM_MAX_PATH, "cfg/%s/plugin.%s.cfg", folder, pluginName[start+1]);
 		}
 		else
 		{
@@ -113,18 +117,18 @@ methodmap Convar < ConVar
 				for (int i = 0; i < _ConvarList.Length; ++i)
 				{
 					// get the current convar and description
-					convar_t c;
-					_ConvarList.GetArray(i, c);
+					convar_t convar;
+					_ConvarList.GetArray(i, convar);
 
 					// don't write to file if flag is set
-					if (c.cvar.Flags & FCVAR_DONTRECORD != 0)
+					if (convar.cvar.Flags & FCVAR_DONTRECORD != 0)
 					{
 						continue;
 					}
 					
 					// make a copy of our description
 					char descr[512];
-					descr = c.description;
+					descr = convar.description;
 
 					// format newlines as comments
 					ReplaceString(descr, 512, "\n", "\n// ");
@@ -134,20 +138,20 @@ methodmap Convar < ConVar
 
 					// get the convar name and default value to write to file
 					char name[64];
-					c.cvar.GetName(name, 64);
+					convar.cvar.GetName(name, 64);
 
 					file.WriteLine("// -");
-					file.WriteLine("// Default: \"%s\"", c.defValue);
+					file.WriteLine("// Default: \"%s\"", convar.defValue);
 					float x;
-					if (c.GetMin(x))
+					if (convar.GetMin(x))
 					{
 						file.WriteLine("// Minimum: \"%02f\"", x);
 					}
-					if (c.GetMax(x))
+					if (convar.GetMax(x))
 					{
 						file.WriteLine("// Maximum: \"%02f\"", x);
 					}
-					file.WriteLine("%s \"%s\"\n", name, c.defValue);
+					file.WriteLine("%s \"%s\"\n", name, convar.defValue);
 				}
 				// end with newline
 				file.WriteLine("");
@@ -223,30 +227,30 @@ methodmap Convar < ConVar
 				float x;
 				for (int i = 0; i < _ConvarList.Length; ++i)
 				{
-					convar_t c;
-					_ConvarList.GetArray(i, c);
+					convar_t convar;
+					_ConvarList.GetArray(i, convar);
 
-					if (c.cvar.Flags & FCVAR_DONTRECORD != 0)
+					if (convar.cvar.Flags & FCVAR_DONTRECORD != 0)
 					{
 						continue;
 					}
 
 					char descr[512];
-					descr = c.description;
+					descr = convar.description;
 
 					ReplaceString(descr, 512, "\n", "\n// ");
 					file.WriteLine("// %s", descr);
 
 					char name[64];
-					c.cvar.GetName(name, 64);
+					convar.cvar.GetName(name, 64);
 
 					file.WriteLine("// -");
-					file.WriteLine("// Default: \"%s\"", c.defValue);
-					if (c.GetMin(x))
+					file.WriteLine("// Default: \"%s\"", convar.defValue);
+					if (convar.GetMin(x))
 					{
 						file.WriteLine("// Minimum: \"%02f\"", x);
 					}
-					if (c.GetMax(x))
+					if (convar.GetMax(x))
 					{
 						file.WriteLine("// Maximum: \"%02f\"", x);
 					}
@@ -259,7 +263,7 @@ methodmap Convar < ConVar
 					}
 					else
 					{
-						file.WriteLine("%s \"%s\"\n", name, c.defValue);
+						file.WriteLine("%s \"%s\"\n", name, convar.defValue);
 					}
 				}
 				file.WriteLine("");
